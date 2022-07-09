@@ -1,0 +1,45 @@
+import numpy as np
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+from matplotlib import pyplot as plt
+
+
+# Nathan Englehart (Summer, 2022)
+
+class ols_regression():
+
+  def __init__(self):
+      
+      """ OLS regression class based on sklearn functionality (for modular use) """
+
+  def fit(self, X, t):
+
+      """ Fits ridge regression model with given train matrix and target vector
+		Args:
+			
+			X::[Numpy Array]
+				Train matrix (build before putting into function)
+			
+			t::[Numpy Array]
+				Target vector
+      """
+
+      theta = np.linalg.inv(X.T.dot(X)).dot(X.T).dot(t)
+      
+      self.theta = theta
+      self.coef_ = theta
+      
+      return self
+
+  def predict(self, X):
+      
+      """ Generates predictions for the given matrix based on model.
+      		Args:
+			
+			X::[Numpy Array]
+				Test matrix (build before putting into function)
+      """
+
+      self.predictions = X.dot(self.theta)
+
+      return self.predictions
