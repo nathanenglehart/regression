@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 
+# Nathan Englehart (Summer, 2022)
+
 class ridge_regression():
 
   def __init__(self, lam=1.0):
