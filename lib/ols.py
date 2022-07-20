@@ -11,11 +11,12 @@ class ols_regression():
 
   def fit(self, X, t):
 
-      """ Fits ridge regression model with given train matrix and target vector
+      """ Fits ridge regression model with given regressor/train matrix and target vector
+      
 		Args:
 			
 			X::[Numpy Array]
-				Train matrix (build before putting into function)
+				Regressor/train matrix (must be built before entering as parameter with method such as sklearn.PolynomialFeatures fit_transform)
 			
 			t::[Numpy Array]
 				Target vector
@@ -30,11 +31,12 @@ class ols_regression():
 
   def predict(self, X):
       
-      """ Generates predictions for the given matrix based on model.
+      """ Generates predictions for the given matrix based on model
+      
       		Args:
 			
 			X::[Numpy Array]
-				Test matrix (build before putting into function)
+				Test matrix (must be built before entering as parameter with method such as sklearn.PolynomialFeatures fit_transform)
       """
 
       self.predictions = X.dot(self.theta)
