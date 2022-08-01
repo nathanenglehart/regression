@@ -1,4 +1,4 @@
-# Various From Scratch Regression Implementations
+# Regression Implementations
 
 ## Author
 Nathan Englehart
