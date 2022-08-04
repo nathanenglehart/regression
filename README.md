@@ -2,7 +2,7 @@
 
 ## Author
 
-Nathan Englehart
+Nathan Englehart (Summer, 2022)
 
 ## Documentation
 
