@@ -1,7 +1,7 @@
 import numpy as np
 from math import exp
 
-class logit():
+class logit_regression():
 	
 	def __init__(self, alpha=0.3, epoch=100):
 		
