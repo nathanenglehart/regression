@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 
 # Nathan Englehart (Summer, 2022)
 

@@ -1,9 +1,10 @@
 import numpy as np
-from math import exp
+
+# Nathan Englehart (Summer, 2022)
 
 class logit_regression():
 	
-	def __init__(self, alpha=0.3, epoch=100):
+	def __init__(self, alpha=0.1, epoch=100):
 		
 		""" Logistic regression class based on sklearn functionality 
 			
@@ -18,44 +19,23 @@ class logit_regression():
 
 		self.alpha = alpha
 		self.epoch = epoch
-	
+
 	def fit(self,X,t):
 
 		""" Fits logistic regression model with given regressor/train matrix and target vector 
 
 			Args:
 				X::[Numpy Array]
-					Regressor/train matrix
+					Regressor/train matrix that already has column of ones for intercept
 
 				t::[Numpy Array]
 					Target vector
 
 		"""
 
-		self.coef_ = self.sgd(X, t)
+		self.sgd(X, t)
 
 		return self
-
-	def predict(self, X):
-
-
-		""" Generates predictions for the given matrix based on model
-
-			Args:
-				X::[Numpy Array]
-					Test matrix
-
-		"""
-
-		preds = list()
-
-		for row in X:
-			t_hat = self.coef_[0]
-			for i in range(len(row)-1):
-				t_hat += self.coef_[i + 1] * row[i]
-			preds.append(1.0 / (1.0 + exp(-t_hat)))
-
-		return preds
 	
 	def sgd(self, X, t):
 	
@@ -70,16 +50,36 @@ class logit_regression():
 
 		"""
 		
-		coef = [0.0 for i in range(len(X[0]))]
+		self.coef_ = [0.0 for i in range(len(X[0]))]  
 
-		for epoch in range(self.epoch):
-			for j in range(len(X)):
-				t_hat = coef[0]
-				for i in range(len(X[j])-1):
-					t_hat += coef[i+1] * X[j][i]
-				t_hat = 1.0 / (1.0 + exp(-t_hat))
-				error = t[j] - t_hat 
-				coef[0] = coef[0] + self.alpha * error * t_hat * (1.0 - t_hat)
-				for i in range(len(X[j])-1):
-					coef[i + 1] = coef[i + 1] + self.alpha * error * t_hat * (1.0 - t_hat) * X[j][i]
-		return coef
+		for i in range(self.epoch):
+		
+			for i in X:
+
+				t_hat = self.predict(X)
+
+				gradient = np.dot(X.T, (t_hat - t)) / t.size
+				
+				self.coef_ = self.coef_ - (self.alpha * gradient)
+
+		return self
+	
+	def sigmoid(self,z):
+		
+		""" Sigmoid function (also called the logistic function) where P(t = 1) = sigma(coefs * x) and P(t = 0) = 1 - sigma(coefs * x) """
+
+		return 1.0 / (1.0 + np.exp(z))
+
+	def predict(self, X):
+
+
+		""" Generates predictions for the given matrix based on model
+
+			Args:
+				X::[Numpy Array]
+					Test matrix that already has column of ones for intercept
+
+		"""
+
+		return 1 - self.sigmoid(np.dot(X,self.coef_))
+	

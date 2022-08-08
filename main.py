@@ -13,9 +13,35 @@ from lib.logit import logit_regression
 
 plt.style.use('seaborn-poster')	
 
+def logit_driver():
+	
+	# DRIVER FOR LOGIT REGRESSION EXAMPLE
+	# UNCOMMENT plt.show FOR VISUALIZATIONS
+
+	# SIMPLE LOGIT REGRESSION 
+
+	x_1 = np.arange(10)
+	t = np.array([0, 0, 0, 0, 1, 1, 1, 1, 1, 1])
+	
+	X = np.array([np.ones(len(t)),x_1]).T
+	#X = np.array([np.ones(len(t)),x_1]).T # adds ones - dont think we need it 
+
+	model = logit_regression()
+	model = logit_regression().fit(X,t)
+
+	t_hat = model.predict(X)
+	print('preds:',t_hat)
+
+	plt.scatter(x_1,t, color='tab:olive')
+	plt.plot(x_1,t_hat, color='tab:cyan')
+	plt.xlabel('x_1')
+	plt.ylabel('t')
+	plt.savefig('figs/simple_logit.png')
+
+
 def ols_driver():
 
-	# DRIVER FOR VARIOUS OLSREGRESSION EXAMPLES
+	# DRIVER FOR VARIOUS OLS REGRESSION EXAMPLES
 	# UNCOMMENT plt.show FOR VISUALIZATIONS
 
 	data = pd.read_csv('data/mpg.csv', sep=",")
@@ -258,5 +284,6 @@ def ridge_driver():
 
 if __name__ == '__main__':
 	
-	ols_driver()
-	ridge_driver()
+	#ols_driver()
+	#ridge_driver()
+	logit_driver()
