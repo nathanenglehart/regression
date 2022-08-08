@@ -33,17 +33,17 @@ class logit_regression():
 
 		"""
 
-		self.sgd(X, t)
+		self.gd(X, t)
 
 		return self
 	
-	def sgd(self, X, t):
+	def gd(self, X, t):
 	
-		""" Performs stochastic gradient descent to find optimal coefficients for logit model within fit function
+		""" Performs gradient descent to find optimal coefficients for logit model within fit function
 
 			Args:
 				X::[Numpy Array]
-					Regressor/train matrix
+					Regressor/train matrix that already has column of ones for intercept
 				
 				t::[Numpy Array]
 					Target vector
