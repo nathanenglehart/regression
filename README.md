@@ -1,5 +1,7 @@
 # Regression Implementations
 
+Implementations of OLS, ridge, lasso, and logit regression classes using Python. 
+
 ## Author
 
 Nathan Englehart (Summer, 2022)
