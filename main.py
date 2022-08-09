@@ -6,12 +6,40 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from mpl_toolkits import mplot3d
 from sklearn.preprocessing import PolynomialFeatures
+from sklearn import preprocessing
 
-from lib.ols import ols_regression
-from lib.ridge import ridge_regression
-from lib.logit import logit_regression
+from lib.closed.ols import ols_regression
+from lib.closed.ridge import ridge_regression
+from lib.gd.lasso import lasso_regression
+from lib.gd.logit import logit_regression
 
 plt.style.use('seaborn-poster')	
+
+def lasso_driver():
+	
+	# DRIVER FOR LASSO REGRESSION EXAMPLE
+	# UNCOMMENT plt.show FOR VISUALIZATIONS
+	
+	data = pd.read_csv('data/mpg.csv', sep=",")
+
+	# SIMPLE LASSO REGRESSION
+	
+	t = preprocessing.scale(np.array(data['mpg']))
+	x = preprocessing.scale(np.array(data['weight']))
+
+	X = np.array([np.ones(len(t)), x]).T
+
+	model = lasso_regression()
+	model = lasso_regression().fit(X,t)
+
+	t_hat = model.predict(X)
+
+	plt.scatter(x, t, color='none', edgecolor='tab:cyan')
+	plt.plot(x, t_hat, color='tab:orange', alpha=0.5)
+	plt.xlabel('weight')
+	plt.ylabel('mpg')
+	plt.savefig('figs/simple_lasso.png')
+	plt.show()
 
 def logit_driver():
 	
@@ -24,7 +52,6 @@ def logit_driver():
 	t = np.array([0, 0, 0, 0, 1, 1, 1, 1, 1, 1])
 	
 	X = np.array([np.ones(len(t)),x_1]).T
-	#X = np.array([np.ones(len(t)),x_1]).T # adds ones - dont think we need it 
 
 	model = logit_regression()
 	model = logit_regression().fit(X,t)
@@ -37,7 +64,7 @@ def logit_driver():
 	plt.xlabel('x_1')
 	plt.ylabel('t')
 	plt.savefig('figs/simple_logit.png')
-
+	plt.show()
 
 def ols_driver():
 
@@ -286,4 +313,5 @@ if __name__ == '__main__':
 	
 	#ols_driver()
 	#ridge_driver()
-	logit_driver()
+	#logit_driver()
+	#lasso_driver()

@@ -4,16 +4,16 @@ import numpy as np
 
 class logit_regression():
 	
-	def __init__(self, alpha=0.1, epoch=100):
+	def __init__(self, alpha=0.1, epoch=1000):
 		
 		""" Logistic regression class based on sklearn functionality 
 			
 			Args:
 				alpha::[Float]
-					Learning rate for stochastic gradient descent algorithm
+					Learning rate for batch gradient descent algorithm
 
 				epoch::[Int]
-					Number of iterations for stochastic gradient descent algorithm
+					Number of iterations for batch gradient descent algorithm
 
 		"""
 
@@ -34,12 +34,13 @@ class logit_regression():
 		"""
 
 		self.gd(X, t)
+		self.coef_ = self.theta
 
 		return self
 	
 	def gd(self, X, t):
 	
-		""" Performs gradient descent to find optimal coefficients for logit model within fit function
+		""" Performs batch gradient descent to find optimal coefficients for logit model within fit function
 
 			Args:
 				X::[Numpy Array]
@@ -50,17 +51,15 @@ class logit_regression():
 
 		"""
 		
-		self.coef_ = [0.0 for i in range(len(X[0]))]  
+		self.theta = np.zeros(X.shape[1]) 
 
 		for i in range(self.epoch):
 		
-			for i in X:
+			t_hat = self.predict(X)
 
-				t_hat = self.predict(X)
-
-				gradient = np.dot(X.T, (t_hat - t)) / t.size
+			gradient = np.dot(X.T, (t_hat - t)) / t.size
 				
-				self.coef_ = self.coef_ - (self.alpha * gradient)
+			self.coef_ = self.theta - (self.alpha * gradient)
 
 		return self
 	
@@ -81,5 +80,5 @@ class logit_regression():
 
 		"""
 
-		return 1 - self.sigmoid(np.dot(X,self.coef_))
+		return 1 - self.sigmoid(np.dot(X,self.theta))
 	

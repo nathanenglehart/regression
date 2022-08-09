@@ -4,9 +4,28 @@
 
 Nathan Englehart (Summer, 2022)
 
+## Usage
+
+Open `main.py` and uncomment the drivers for each regression you would like to test in the main function. For instance to run the lasso regression driver:
+
+```python
+if __name__ == '__main__':
+	
+	#ols_driver()
+	#ridge_driver()
+	#logit_driver()
+	lasso_driver()
+```
+
 ## Documentation
 
-OLS and ridge documentation available at: <a href="https://nathanenglehart.github.io/regression/">https://nathanenglehart.github.io/regression/</a>.
+OLS and ridge project documentation available at: <a href="https://nathanenglehart.github.io/regression/">https://nathanenglehart.github.io/regression/</a>.
+
+Logit and lasso project documentation coming soon.
+
+## Notes
+
+This is a work in progress. OLS and ridge classes use their respective closed form solution. Logit and lasso classes use batch gradient descent to compute coefficients. 
 
 ## References
 
