@@ -46,7 +46,7 @@ def logit_driver():
 	# DRIVER FOR LOGIT REGRESSION EXAMPLE
 	# UNCOMMENT plt.show FOR VISUALIZATIONS
 
-	# SIMPLE LOGIT REGRESSION 
+	# (VERY) SIMPLE LOGIT REGRESSION 
 
 	x_1 = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 	t = np.array([0, 0, 0, 0, 1, 1, 1, 1, 1, 1])
@@ -63,10 +63,9 @@ def logit_driver():
 	plt.plot(x_1,t_probs, color='tab:cyan')
 	plt.xlabel('x_1')
 	plt.ylabel('t')
-	plt.savefig('figs/simple_logit-1.png')
 	plt.show()
 
-	# SIMPLE LOGIT REGRESSION (PIMA) 
+	# SIMPLE LOGIT REGRESSION 
 
 	data = pd.read_csv('data/pima.csv',sep=",")
 	
@@ -124,7 +123,26 @@ def logit_driver():
 	t_probs = model.predict_proba(X)
 	print('prob preds',t_probs)
 
-	# NOT SURE HOW TO DISPLAY YET?
+	x_pts = np.linspace(x_1.min(), x_1.max(), 30)
+	y_pts = np.linspace(x_2.min(), x_2.max(), 30)
+	x_pairs, y_pairs = np.meshgrid(x_pts,y_pts)
+
+	# Get values for all ordered pairs in set using model
+
+	z = 1 / (1 + np.e ** (model.coef_[0] + model.coef_[1] * x_pairs + model.coef_[2] * y_pairs))
+
+	# Graph
+
+	fig = plt.figure(figsize = (100,100))
+	ax = plt.axes(projection='3d')
+	ax.plot_surface(x_pairs,y_pairs,z, rstride=1, cstride=1, color='tab:cyan', alpha=0.4, antialiased=False)
+	ax.scatter(x_1,x_2,t, c = 'tab:olive')
+	ax.set_ylabel('mass')
+	ax.set_title('pima', fontsize=20)
+	plt.xlabel('\n\n\nglucose', fontsize=18)
+	plt.ylabel('\n\n\nmass', fontsize=16)
+	plt.savefig('figs/multivariate_logit.png')
+	plt.show()
 
 def ols_driver():
 
