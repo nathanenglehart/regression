@@ -33,14 +33,14 @@ class logit_regression():
 
 		"""
 
-		self.gd(X, t)
+		self.bgd(X, t)
 		self.coef_ = self.theta
 
 		return self
 	
-	def gd(self, X, t):
+	def bgd(self, X, t):
 	
-		""" Performs batch gradient descent to find optimal coefficients for logit model within fit function
+		""" Performs batch gradient descent (also known as vanilla gradient descent) to find optimal coefficients for logit model within fit function
 
 			Args:
 				X::[Numpy Array]
@@ -54,12 +54,12 @@ class logit_regression():
 		self.theta = np.zeros(X.shape[1]) 
 
 		for i in range(self.epoch):
-		
-			t_hat = self.predict(X)
+			
+			t_hat = self.predict_proba(X)
 
 			gradient = np.dot(X.T, (t_hat - t)) / t.size
 				
-			self.coef_ = self.theta - (self.alpha * gradient)
+			self.theta -= (self.alpha * gradient)
 
 		return self
 	
@@ -69,7 +69,7 @@ class logit_regression():
 
 		return 1.0 / (1.0 + np.exp(z))
 
-	def predict(self, X):
+	def predict_proba(self, X):
 
 
 		""" Generates predictions for the given matrix based on model
@@ -81,4 +81,6 @@ class logit_regression():
 		"""
 
 		return 1 - self.sigmoid(np.dot(X,self.theta))
-	
+
+	def predict(self, X):
+		return self.predict_proba(X).round()

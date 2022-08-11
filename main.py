@@ -48,16 +48,16 @@ def logit_driver():
 
 	# SIMPLE LOGIT REGRESSION 
 
-	x_1 = np.arange(10)
+	x_1 = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 	t = np.array([0, 0, 0, 0, 1, 1, 1, 1, 1, 1])
 	
 	X = np.array([np.ones(len(t)),x_1]).T
-
+	
 	model = logit_regression()
 	model = logit_regression().fit(X,t)
 
-	t_hat = model.predict(X)
-	print('preds:',t_hat)
+	t_hat = model.predict_proba(X)
+	print('prob preds:',t_hat)
 
 	plt.scatter(x_1,t, color='tab:olive')
 	plt.plot(x_1,t_hat, color='tab:cyan')
@@ -313,5 +313,5 @@ if __name__ == '__main__':
 	
 	#ols_driver()
 	#ridge_driver()
-	#logit_driver()
+	logit_driver()
 	#lasso_driver()
