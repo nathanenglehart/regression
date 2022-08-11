@@ -72,7 +72,7 @@ class logit_regression():
 	def predict_proba(self, X):
 
 
-		""" Generates predictions for the given matrix based on model
+		""" Generates probability predictions for the given matrix based on model
 
 			Args:
 				X::[Numpy Array]
@@ -83,4 +83,13 @@ class logit_regression():
 		return 1 - self.sigmoid(np.dot(X,self.theta))
 
 	def predict(self, X):
+			
+		""" Generates classification predictions for the given matrix based on the model 
+
+			Args:
+				X::[Numpy Array]
+					Test matrix that already has column of ones for intercept
+
+		"""
+
 		return self.predict_proba(X).round()
