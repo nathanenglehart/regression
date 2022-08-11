@@ -55,9 +55,7 @@ class logit_regression():
 
 		for i in range(self.epoch):
 			
-			t_hat = self.predict_proba(X)
-
-			gradient = np.dot(X.T, (t_hat - t)) / t.size
+			gradient = np.dot(X.T, (self.predict_proba(X) - t)) / t.size
 				
 			self.theta -= (self.alpha * gradient)
 
