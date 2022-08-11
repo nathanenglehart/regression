@@ -56,15 +56,75 @@ def logit_driver():
 	model = logit_regression()
 	model = logit_regression().fit(X,t)
 
-	t_hat = model.predict_proba(X)
-	print('prob preds:',t_hat)
+	t_probs = model.predict_proba(X)
+	print('prob preds:',t_probs)
 
 	plt.scatter(x_1,t, color='tab:olive')
-	plt.plot(x_1,t_hat, color='tab:cyan')
+	plt.plot(x_1,t_probs, color='tab:cyan')
+	plt.xlabel('x_1')
+	plt.ylabel('t')
+	plt.savefig('figs/simple_logit-1.png')
+	plt.show()
+
+	# SIMPLE LOGIT REGRESSION (PIMA) 
+
+	data = pd.read_csv('data/pima.csv',sep=",")
+	
+	t = np.array(data['diabetes']) 
+	x_1 = preprocessing.scale(np.array(data['mass'], dtype=np.float128)) # , dtype=np.float128 to prevent overflow
+	
+	X = np.array([np.ones(len(t)), x_1]).T
+
+	model = logit_regression()
+	model = logit_regression().fit(X,t)
+
+	t_probs = model.predict_proba(X)
+	print('prob preds',t_probs)
+
+	plt.scatter(x_1,t, color='tab:olive')
+	x_1, t_probs = zip(*sorted(zip(x_1,t_probs))) # plot points in order
+	plt.plot(x_1,t_probs, color='tab:cyan')
 	plt.xlabel('x_1')
 	plt.ylabel('t')
 	plt.savefig('figs/simple_logit.png')
 	plt.show()
+
+	# POLYNOMIAL LOGIT REGRESSION
+	
+	t = np.array(data['diabetes']) 
+	x_1 = preprocessing.scale(np.array(data['glucose'], dtype=np.float128))
+	
+	X = np.array([np.ones(len(t)), x_1, np.square(x_1)]).T
+
+	model = logit_regression()
+	model = logit_regression().fit(X,t)
+
+	t_probs = model.predict_proba(X)
+	print('prob preds',t_probs)
+
+	plt.scatter(x_1,t, color='tab:olive')
+	x_1, t_probs = zip(*sorted(zip(x_1,t_probs))) # plot points in order
+	plt.plot(x_1,t_probs, color='tab:cyan')
+	plt.xlabel('x_1')
+	plt.ylabel('t')
+	plt.savefig('figs/polynomial_logit.png')
+	plt.show()
+
+	# MULTIVARIATE LOGIT REGRESSION
+
+	t = np.array(data['diabetes']) 
+	x_1 = preprocessing.scale(np.array(data['glucose'], dtype=np.float128))
+	x_2 = preprocessing.scale(np.array(data['mass'], dtype=np.float128))
+	
+	X = np.array([np.ones(len(t)), x_1, x_2]).T
+
+	model = logit_regression()
+	model = logit_regression().fit(X,t)
+
+	t_probs = model.predict_proba(X)
+	print('prob preds',t_probs)
+
+	# NOT SURE HOW TO DISPLAY YET?
 
 def ols_driver():
 
