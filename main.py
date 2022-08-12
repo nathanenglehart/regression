@@ -2,6 +2,7 @@
 
 import numpy as np
 import pandas as pd
+import seaborn as sns
 
 from matplotlib import pyplot as plt
 from mpl_toolkits import mplot3d
@@ -57,18 +58,21 @@ def logit_driver():
 	model = logit_regression().fit(X,t)
 
 	t_probs = model.predict_proba(X)
-	print('prob preds:',t_probs)
+	#print('prob preds:',t_probs)
 
 	plt.scatter(x_1,t, color='tab:olive')
 	plt.plot(x_1,t_probs, color='tab:cyan')
 	plt.xlabel('x_1')
 	plt.ylabel('t')
-	plt.show()
+	#plt.show()
+	plt.close()
 
 	# SIMPLE LOGIT REGRESSION 
 
 	data = pd.read_csv('data/pima.csv',sep=",")
-	
+
+	# pregnant,glucose,pressure,triceps,insulin,mass,pedigree,age,diabetes
+
 	t = np.array(data['diabetes']) 
 	x_1 = preprocessing.scale(np.array(data['mass'], dtype=np.float128)) # , dtype=np.float128 to prevent overflow
 	
@@ -78,15 +82,16 @@ def logit_driver():
 	model = logit_regression().fit(X,t)
 
 	t_probs = model.predict_proba(X)
-	print('prob preds',t_probs)
+	#print('prob preds',t_probs)
 
-	plt.scatter(x_1,t, color='tab:olive')
+	plt.scatter(x_1, t, facecolors='none', edgecolor='tab:olive')
 	x_1, t_probs = zip(*sorted(zip(x_1,t_probs))) # plot points in order
 	plt.plot(x_1,t_probs, color='tab:cyan')
-	plt.xlabel('x_1')
-	plt.ylabel('t')
+	plt.xlabel('glucose')
+	plt.ylabel('diabetes')
 	plt.savefig('figs/simple_logit.png')
-	plt.show()
+	#plt.show()
+	plt.close()
 
 	# POLYNOMIAL LOGIT REGRESSION
 	
@@ -99,15 +104,16 @@ def logit_driver():
 	model = logit_regression().fit(X,t)
 
 	t_probs = model.predict_proba(X)
-	print('prob preds',t_probs)
+	#print('prob preds',t_probs)
 
 	plt.scatter(x_1,t, color='tab:olive')
 	x_1, t_probs = zip(*sorted(zip(x_1,t_probs))) # plot points in order
 	plt.plot(x_1,t_probs, color='tab:cyan')
-	plt.xlabel('x_1')
-	plt.ylabel('t')
+	plt.xlabel('glucose')
+	plt.ylabel('diabetes')
 	plt.savefig('figs/polynomial_logit.png')
-	plt.show()
+	#plt.show()
+	plt.close()
 
 	# MULTIVARIATE LOGIT REGRESSION
 
@@ -121,7 +127,7 @@ def logit_driver():
 	model = logit_regression().fit(X,t)
 
 	t_probs = model.predict_proba(X)
-	print('prob preds',t_probs)
+	#print('prob preds',t_probs)
 
 	x_pts = np.linspace(x_1.min(), x_1.max(), 30)
 	y_pts = np.linspace(x_2.min(), x_2.max(), 30)
@@ -142,7 +148,81 @@ def logit_driver():
 	plt.xlabel('\n\n\nglucose', fontsize=18)
 	plt.ylabel('\n\n\nmass', fontsize=16)
 	plt.savefig('figs/multivariate_logit.png')
+	#plt.show()
+	plt.close()
+
+	# CLASSIFICATION
+
+	# make train and test datasets
+
+	train_test_split('data/pima.csv','pima-train.csv','pima-test.csv')
+
+	train_data = pd.read_csv('data/pima-train.csv', sep=",") 
+	test_data = pd.read_csv('data/pima-test.csv', sep=",")
+
+	# graph true classifications
+
+	sns.pairplot(test_data, hue="diabetes", palette=['lightcoral', 'skyblue'], plot_kws={'alpha':0.75})
+	plt.savefig('figs/true-pima-pairplot.png')
+	#plt.show()
+	plt.close()
+
+	# generate predicted classifications
+
+	t = np.array(train_data['diabetes'])
+	
+	train_data = train_data.drop(['diabetes'], axis=1)
+
+	x_1 = np.ones((len(t),1))
+	x_n = preprocessing.scale(np.array(train_data))	
+	X = np.hstack((x_1,x_n)) 
+	#print(X)
+	
+	model = logit_regression()
+	model = logit_regression().fit(X,t)
+
+	t = np.array(test_data['diabetes'])
+
+	test_data = test_data.drop(['diabetes'], axis=1)
+
+	x_1 = np.ones((len(t),1))
+	x_n = preprocessing.scale(np.array(test_data))	
+	X = np.hstack((x_1,x_n)) 
+
+	t_hat = model.predict(X)
+	#t_hat = t_hat.reshape((len(t_hat),1))
+	
+	#X = np.hstack((t_hat,X))
+
+	# graph predicted classifications
+
+	# pregnant,glucose,pressure,triceps,insulin,mass,pedigree,age,diabetes
+	
+	test_data_with_pred_classifications = pd.read_csv('data/pima-test.csv', sep=",")
+	test_data_with_pred_classifications['diabetes'] = t_hat
+
+	#test_with_pred_classifications = pd.DataFrame(X, columns = ['diabetes','pregnant','glucose','pressure','triceps','insulin','mass','pedigree','age'])
+	sns.pairplot(test_data_with_pred_classifications, hue="diabetes", palette=['lightcoral', 'skyblue'], plot_kws={'alpha':0.75})
+	plt.savefig('figs/pred-pima-pairplot.png')
 	plt.show()
+	#plt.close()
+
+	error_rate = 0
+
+	for i in range(len(t)):
+		
+		if(t[i] != t_hat[i]):
+			error_rate += 1
+	
+	error_rate = error_rate / len(t) 
+
+	print('error rate:', error_rate)
+
+
+
+
+
+
 
 def ols_driver():
 
@@ -386,6 +466,33 @@ def ridge_driver():
 	plt.ylabel('\n\n\ndisplacement', fontsize=16)
 	plt.savefig('figs/polynomial_multivariate_ridge.png')
 	plt.show()
+
+def train_test_split(data, train_filename, test_filename):
+	
+	""" Splits csv file into a train and test csv files
+		
+		Args:
+
+			data::[String]
+				Path to csv file to split
+
+			train_filename::[String]
+				Name for train csv file
+
+			test_filename::[String]
+				Name for test csv file
+
+
+	"""
+
+	df = pd.read_csv(data) 
+		
+	msk = np.random.rand(len(df)) < 0.8
+	train = df[msk]
+	test = df[~msk]
+
+	train.to_csv(r'./data/' + train_filename, index=False)
+	test.to_csv(r'./data/' + test_filename, index=False)
 
 if __name__ == '__main__':
 	
