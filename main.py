@@ -16,7 +16,7 @@ from lib.gd.logit import logit_regression
 
 plt.style.use('seaborn-poster')	
 
-bool verbose = False
+verbose = True
 
 def compute_classification_error_rate(t,t_hat):
 	""" Computes error rate for classification methods such as logistic regression.
@@ -55,7 +55,29 @@ def r_squared(t, t_hat):
 	"""
 
 	t_bar = t.mean()
-	return 1 - ((((t-t_bar)**2).sum())/(((t-t_hat)**2).sum()))
+
+	return 1 - ((((t-t_hat)**2).sum()) / (((t-t_bar)**2).sum()))
+
+def adj_r_squared(t,t_hat,m):
+
+	""" Returns adjusted R-Squared for model with given truth values and prediction values.
+
+		Args:
+				
+			t::[Numpy Array]
+				Truth values
+
+			t_hat::[Numpy Array]
+				Prediction values
+			
+			m::[Integer]
+				Number of features in the dataset
+	
+	"""
+
+	n = len(t)
+
+	return 1 - (((1-r_squared(t,t_hat)) * (n - 1) ) / (n-m-1))
 
 def efron_r_squared(t, t_probs):
 
@@ -121,16 +143,16 @@ def mcfadden_r_squared(theta, X, t):
 
 	return 1.0 - (full_log_likelihood / null_log_likelihood)
 
-def mcfadden_adjusted_rsquare(w, X, y):
+def mcfadden_adjusted_rsquare(theta, X, t):
 
 	""" """
 
-	score = np.dot(X, w).reshape(1, X.shape[0])
-	full_log_likelihood = np.sum(-np.log(1 + np.exp(score))) + np.sum(y * score)
+	score = np.dot(X, theta).reshape(1, X.shape[0])
+	full_log_likelihood = np.sum(-np.log(1 + np.exp(score))) + np.sum(t * score)
 
-	z = np.array([w if i == 0 else 0.0 for i, w in enumerate(w.reshape(1, X.shape[1])[0])]).reshape(X.shape[1], 1)
+	z = np.array([w if i == 0 else 0.0 for i, w in enumerate(theta.reshape(1, X.shape[1])[0])]).reshape(X.shape[1], 1)
 	score = np.dot(X, z).reshape(1, X.shape[0])
-	null_log_likelihood = np.sum(-np.log(1 + np.exp(score))) + np.sum(y * score)
+	null_log_likelihood = np.sum(-np.log(1 + np.exp(score))) + np.sum(t * score)
 
 	k = float(X.shape[1])
 	return 1.0 - ((full_log_likelihood- k) / null_log_likelihood)
@@ -160,6 +182,9 @@ def lasso_driver():
 	plt.ylabel('mpg')
 	plt.savefig('figs/simple_lasso.png')
 	plt.show()
+
+	if(verbose):
+		print('R-Squared:', r_squared(t,t_hat))
 
 def logit_driver():
 	
@@ -364,6 +389,10 @@ def ols_driver():
 	plt.savefig('figs/simple_ols.png')
 	plt.show()
 
+	if(verbose):
+		print('R-Squared:',r_squared(t,t_hat))
+		print('Adjusted R-Squared:',adj_r_squared(t,t_hat,X.shape[1]))
+
 	# POLYNOMIAL OLS REGRESSION 
 	
 	t = np.array(data['mpg'])
@@ -376,6 +405,9 @@ def ols_driver():
 
 	t_hat = model.predict(X)
 
+	r2 = r_squared(t,t_hat)
+	adj_r2 = adj_r_squared(t,t_hat,X.shape[1])
+
 	plt.scatter(x, t, color='g')
 	x, t_hat = zip(*sorted(zip(x,t_hat))) # plot points in order
 	plt.plot(x, t_hat, color='k')
@@ -384,6 +416,9 @@ def ols_driver():
 	plt.savefig('figs/polynomial_ols.png')
 	plt.show()
 
+	if(verbose):
+		print('R-Squared:',r2)
+		print('Adjusted R-Squared',adj_r2)
 
 	# MULTIVARIATE OLS REGRESSION
 
@@ -420,6 +455,10 @@ def ols_driver():
 	plt.ylabel('\n\n\ndisplacement', fontsize=16)
 	plt.savefig('figs/multivariate_ols.png')
 	plt.show()
+
+	if(verbose):
+		print('R-Squared:',r_squared(t,t_hat))
+		print('Adjusted R-Squared:',adj_r_squared(t,t_hat,X.shape[1]))
 
 	# POLYNOMIAL MULTIVARIATE OLS REGRESSION
 
@@ -460,6 +499,10 @@ def ols_driver():
 	plt.savefig('figs/polynomial_multivariate_ols.png')
 	plt.show()
 
+	if(verbose):
+		print('R-Squared:',r_squared(t,t_hat))
+		print('Adjusted R-Squared:',adj_r_squared(t,t_hat,X.shape[1]))
+
 def ridge_driver():
 
 	# DRIVER FOR VARIOUS OLSREGRESSION EXAMPLES
@@ -486,6 +529,9 @@ def ridge_driver():
 	plt.savefig('figs/simple_ridge.png')
 	plt.show()
 
+	if(verbose):
+		print('R-Squared:',r_squared(t,t_hat))
+
 	# POLYNOMIAL RIDGE REGRESSION 
 	
 	t = np.array(data['mpg'])
@@ -505,6 +551,9 @@ def ridge_driver():
 	plt.ylabel('mpg')
 	plt.savefig('figs/polynomial_ridge.png')
 	plt.show()
+
+	if(verbose):
+		print('R-Squared:',r_squared(t,t_hat))
 
 	# MULTIVARIATE RIDGE REGRESSION
 
@@ -541,6 +590,9 @@ def ridge_driver():
 	plt.ylabel('\n\n\ndisplacement', fontsize=16)
 	plt.savefig('figs/multivariate_ridge.png')
 	plt.show()
+
+	if(verbose):
+		print('R-Squared:',r_squared(t,t_hat))
 
 	# POLYNOMIAL MULTIVARIATE RIDGE REGRESSION
 
@@ -581,6 +633,9 @@ def ridge_driver():
 	plt.savefig('figs/polynomial_multivariate_ridge.png')
 	plt.show()
 
+	if(verbose):
+		print('R-Squared:',r_squared(t,t_hat))
+
 def train_test_split(data, train_filename, test_filename):
 	
 	""" Splits csv file into a train and test csv files
@@ -610,7 +665,7 @@ def train_test_split(data, train_filename, test_filename):
 
 if __name__ == '__main__':
 	
-	#ols_driver()
+	ols_driver()
 	#ridge_driver()
-	logit_driver()
+	#logit_driver()
 	#lasso_driver()
