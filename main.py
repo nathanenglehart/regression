@@ -13,6 +13,7 @@ from lib.closed.ols import ols_regression
 from lib.closed.ridge import ridge_regression
 from lib.gd.lasso import lasso_regression
 from lib.gd.logit import logit_regression
+from lib.gd.probit import probit_regression
 
 plt.style.use('seaborn-poster')	
 
@@ -76,8 +77,7 @@ def adj_r_squared(t,t_hat,m):
 	"""
 
 	n = len(t)
-
-	return 1 - (((1-r_squared(t,t_hat)) * (n - 1) ) / (n-m-1))
+	return 1 - ((1 - r_squared(t,t_hat)) * ((n-1) / (n-m)))
 
 def efron_r_squared(t, t_probs):
 
@@ -210,7 +210,7 @@ def logit_driver():
 	plt.plot(x_1,t_probs, color='tab:cyan')
 	plt.xlabel('x_1')
 	plt.ylabel('t')
-	#plt.show()
+	plt.show()
 	plt.close()
 
 	# SIMPLE LOGIT REGRESSION 
@@ -231,6 +231,8 @@ def logit_driver():
 
 	if(verbose):
 		print('prob preds',t_probs)
+		print('McFadden R-Squared:',mcfadden_r_squared(model.coef_, X, t))
+		print('Efron R-Squared:',efron_r_squared(t,t_probs))
 
 	plt.scatter(x_1, t, facecolors='none', edgecolor='tab:olive')
 	x_1, t_probs = zip(*sorted(zip(x_1,t_probs))) # plot points in order
@@ -238,7 +240,7 @@ def logit_driver():
 	plt.xlabel('glucose')
 	plt.ylabel('diabetes')
 	plt.savefig('figs/simple_logit.png')
-	#plt.show()
+	plt.show()
 	plt.close()
 
 	# POLYNOMIAL LOGIT REGRESSION
@@ -280,6 +282,8 @@ def logit_driver():
 
 	if(verbose):
 		print('prob preds',t_probs)
+		print('McFadden R-Squared:',mcfadden_r_squared(model.coef_, X, t))
+		print('Efron R-Squared:',efron_r_squared(t,t_probs))
 
 	x_pts = np.linspace(x_1.min(), x_1.max(), 30)
 	y_pts = np.linspace(x_2.min(), x_2.max(), 30)
@@ -360,6 +364,62 @@ def logit_driver():
 		print('McFadden R-Squared:',mcfadden_r_squared(model.coef_, X, t))
 		print('Efron R-Squared:',efron_r_squared(t,t_probs))
 
+def probit_driver():
+	
+	# DRIVER FOR PROBIT REGRESSION EXAMPLE
+	# UNCOMMENT plt.show FOR VISUALIZATIONS
+
+	# (VERY) SIMPLE PROBIT REGRESSION 
+
+	x_1 = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+	t = np.array([0, 0, 0, 0, 1, 1, 1, 1, 1, 1])
+	
+	X = np.array([np.ones(len(t)),x_1]).T
+	
+	model = probit_regression()
+	model = probit_regression().fit(X,t)
+
+	t_probs = model.predict_proba(X)
+
+	if(verbose):
+		print('prob preds:',t_probs)
+
+	plt.scatter(x_1,t, color='tab:olive')
+	plt.plot(x_1,t_probs, color='tab:cyan')
+	plt.xlabel('x_1')
+	plt.ylabel('t')
+	plt.show()
+	plt.close()
+
+	# SIMPLE PROBIT REGRESSION 
+
+	data = pd.read_csv('data/pima.csv',sep=",")
+
+	# pregnant,glucose,pressure,triceps,insulin,mass,pedigree,age,diabetes
+
+	t = np.array(data['diabetes']) 
+	x_1 = preprocessing.scale(np.array(data['mass'], dtype=np.float128)) # , dtype=np.float128 to prevent overflow
+	
+	X = np.array([np.ones(len(t)), x_1]).T
+
+	model = probit_regression()
+	model = probit_regression().fit(X,t)
+
+	t_probs = model.predict_proba(X)
+
+	if(verbose):
+		print('prob preds',t_probs)
+		print('McFadden R-Squared:',mcfadden_r_squared(model.coef_, X, t))
+		print('Efron R-Squared:',efron_r_squared(t,t_probs))
+
+	plt.scatter(x_1, t, facecolors='none', edgecolor='tab:olive')
+	x_1, t_probs = zip(*sorted(zip(x_1,t_probs))) # plot points in order
+	plt.plot(x_1,t_probs, color='tab:cyan')
+	plt.xlabel('glucose')
+	plt.ylabel('diabetes')
+	plt.savefig('figs/simple_logit.png')
+	plt.show()
+	plt.close()
 
 
 
@@ -391,7 +451,7 @@ def ols_driver():
 
 	if(verbose):
 		print('R-Squared:',r_squared(t,t_hat))
-		print('Adjusted R-Squared:',adj_r_squared(t,t_hat,X.shape[1]))
+		print('Adjusted R-Squared:',adj_r_squared(t,t_hat,X.shape[1]-1)) # - 1 to account for intercept column
 
 	# POLYNOMIAL OLS REGRESSION 
 	
@@ -406,7 +466,7 @@ def ols_driver():
 	t_hat = model.predict(X)
 
 	r2 = r_squared(t,t_hat)
-	adj_r2 = adj_r_squared(t,t_hat,X.shape[1])
+	adj_r2 = adj_r_squared(t,t_hat,X.shape[1]-1)
 
 	plt.scatter(x, t, color='g')
 	x, t_hat = zip(*sorted(zip(x,t_hat))) # plot points in order
@@ -458,7 +518,7 @@ def ols_driver():
 
 	if(verbose):
 		print('R-Squared:',r_squared(t,t_hat))
-		print('Adjusted R-Squared:',adj_r_squared(t,t_hat,X.shape[1]))
+		print('Adjusted R-Squared:',adj_r_squared(t,t_hat,X.shape[1]-1))
 
 	# POLYNOMIAL MULTIVARIATE OLS REGRESSION
 
@@ -501,7 +561,7 @@ def ols_driver():
 
 	if(verbose):
 		print('R-Squared:',r_squared(t,t_hat))
-		print('Adjusted R-Squared:',adj_r_squared(t,t_hat,X.shape[1]))
+		print('Adjusted R-Squared:',adj_r_squared(t,t_hat,X.shape[1]-1))
 
 def ridge_driver():
 
@@ -665,7 +725,9 @@ def train_test_split(data, train_filename, test_filename):
 
 if __name__ == '__main__':
 	
-	ols_driver()
+	#ols_driver()
 	#ridge_driver()
-	#logit_driver()
 	#lasso_driver()
+	#logit_driver()
+    probit_driver()
+
