@@ -1,6 +1,6 @@
 # Regression Implementations
 
-Implementations of OLS, ridge, lasso, and logit regression classes using Python. 
+Implementations of OLS, ridge, lasso, logit, and probit regression classes using Python. 
 
 ## Author
 
@@ -21,13 +21,11 @@ if __name__ == '__main__':
 
 ## Documentation
 
-OLS, ridge, and lasso project documentation available at: <a href="https://nathanenglehart.github.io/regression/">https://nathanenglehart.github.io/regression/</a>.
-
-Logit documentation available at: <a href="https://nathanenglehart.github.io/logit/">https://nathanenglehart.github.io/logit/</a>.
+Project documentation available at: <a href="https://nathanenglehart.github.io/regression/">https://nathanenglehart.github.io/regression/</a>.
 
 ## Notes
 
-This is a work in progress. OLS and ridge classes use their respective closed form solution. Logit and lasso classes use batch gradient descent (also known as vanilla gradient descent) to compute coefficients. 
+This is a work in progress. OLS and ridge classes use their respective closed form solution. Logit, probit, and lasso classes use batch gradient descent (also known as vanilla gradient descent) to compute coefficients. 
 
 ## References
 
