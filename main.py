@@ -20,6 +20,7 @@ plt.style.use('seaborn-poster')
 verbose = True
 
 def compute_classification_error_rate(t,t_hat):
+
 	""" Computes error rate for classification methods such as logistic regression.
 
 		Args:
@@ -95,7 +96,7 @@ def efron_r_squared(t, t_probs):
 
 	return 1.0 - ( np.sum(np.power(t - t_probs, 2.0)) / np.sum(np.power((t - (np.sum(t) / float(len(t)))), 2.0)) ) 
 
-def mcfadden_r_squared(theta, X, t):
+def mcfadden_r_squared(theta, X, t, model):
 
 	""" Returns McFadden's psuedo R-Squared for logistic regression 
 	
@@ -110,42 +111,19 @@ def mcfadden_r_squared(theta, X, t):
 			t::[Numpy Array]
 				Truth values corresponding to regressor matrix
 
-
 	"""
 
-	# Based on code from https://datascience.oneoffcoder.com/psuedo-r-squared-logistic-regression.html
+	L_ul = model.log_likelihood(X,t,theta)
+	theta_0 = np.zeros(theta.size)
+	theta_0[0] = theta[0]
+	L_0 = model.log_likelihood(X, t, theta_0)
 
-	# Compute full log likelihood
+	return 1 - (L_ul / L_0)
 
-	score = np.dot(X, theta)
-	score = score.reshape(1, X.shape[0])
-	
-	full_log_likelihood = np.sum(-np.log(1 + np.exp(score))) + np.sum(t * score)
-
-	# Compute null log likelihood
-
-	z = list()
-
-	for i, theta in enumerate(theta.reshape(1, X.shape[1])[0]):
-
-		if(i == 0):
-			z.append(theta)
-		else:
-			z.append(0.0)
-
-	z = np.array(z)
-	z = z.reshape(X.shape[1], 1)
-	
-	score = np.dot(X, z)
-	score = score.reshape(1, X.shape[0])
-	
-	null_log_likelihood = np.sum(-np.log(1 + np.exp(score))) + np.sum(t * score)
-
-	return 1.0 - (full_log_likelihood / null_log_likelihood)
-
+"""
 def mcfadden_adjusted_rsquare(theta, X, t):
 
-	""" """
+	
 
 	score = np.dot(X, theta).reshape(1, X.shape[0])
 	full_log_likelihood = np.sum(-np.log(1 + np.exp(score))) + np.sum(t * score)
@@ -156,6 +134,7 @@ def mcfadden_adjusted_rsquare(theta, X, t):
 
 	k = float(X.shape[1])
 	return 1.0 - ((full_log_likelihood- k) / null_log_likelihood)
+"""
 
 def lasso_driver():
 	
@@ -231,7 +210,7 @@ def logit_driver():
 
 	if(verbose):
 		print('prob preds',t_probs)
-		print('McFadden R-Squared:',mcfadden_r_squared(model.coef_, X, t))
+		print('McFadden R-Squared:',mcfadden_r_squared(model.coef_, X, t, model))
 		print('Efron R-Squared:',efron_r_squared(t,t_probs))
 
 	plt.scatter(x_1, t, facecolors='none', edgecolor='tab:olive')
@@ -282,7 +261,7 @@ def logit_driver():
 
 	if(verbose):
 		print('prob preds',t_probs)
-		print('McFadden R-Squared:',mcfadden_r_squared(model.coef_, X, t))
+		print('McFadden R-Squared:',mcfadden_r_squared(model.coef_, X, t, model))
 		print('Efron R-Squared:',efron_r_squared(t,t_probs))
 
 	x_pts = np.linspace(x_1.min(), x_1.max(), 30)
@@ -361,7 +340,7 @@ def logit_driver():
 
 	if(verbose):
 		print('error rate:', error_rate)
-		print('McFadden R-Squared:',mcfadden_r_squared(model.coef_, X, t))
+		print('McFadden R-Squared:',mcfadden_r_squared(model.coef_, X, t, model))
 		print('Efron R-Squared:',efron_r_squared(t,t_probs))
 
 def probit_driver():
@@ -378,11 +357,15 @@ def probit_driver():
 	
 	model = probit_regression()
 	model = probit_regression().fit(X,t)
+	coef = model.coef_
 
 	t_probs = model.predict_proba(X)
 
 	if(verbose):
 		print('prob preds:',t_probs)
+		print('McFadden R-Squared:',mcfadden_r_squared(coef, X, t, probit_regression()))
+		print('Efron R-Squared:',efron_r_squared(t,t_probs))
+		print('log likelihood',model.log_likelihood(X,t,coef))
 
 	plt.scatter(x_1,t, color='tab:olive')
 	plt.plot(x_1,t_probs, color='tab:cyan')
@@ -404,13 +387,15 @@ def probit_driver():
 
 	model = probit_regression()
 	model = probit_regression().fit(X,t)
+	coef = model.coef_
 
 	t_probs = model.predict_proba(X)
 
 	if(verbose):
 		print('prob preds',t_probs)
-		print('McFadden R-Squared:',mcfadden_r_squared(model.coef_, X, t))
+		print('McFadden R-Squared:',mcfadden_r_squared(coef, X, t, probit_regression()))
 		print('Efron R-Squared:',efron_r_squared(t,t_probs))
+		print('log likelihood',model.log_likelihood(X,t,coef))
 
 	plt.scatter(x_1, t, facecolors='none', edgecolor='tab:olive')
 	x_1, t_probs = zip(*sorted(zip(x_1,t_probs))) # plot points in order
@@ -418,6 +403,46 @@ def probit_driver():
 	plt.xlabel('glucose')
 	plt.ylabel('diabetes')
 	plt.savefig('figs/simple_logit.png')
+	plt.show()
+	plt.close()
+
+# MULTIVARIATE PROBIT REGRESSION
+
+	t = np.array(data['diabetes']) 
+	x_1 = preprocessing.scale(np.array(data['glucose'], dtype=np.float128))
+	x_2 = preprocessing.scale(np.array(data['mass'], dtype=np.float128))
+	
+	X = np.array([np.ones(len(t)), x_1, x_2]).T
+
+	model = probit_regression()
+	model = probit_regression().fit(X,t)
+
+	t_probs = model.predict_proba(X)
+
+	if(verbose):
+		print('prob preds',t_probs)
+		print('McFadden R-Squared:',mcfadden_r_squared(model.coef_, X, t, model))
+		print('Efron R-Squared:',efron_r_squared(t,t_probs))
+
+	x_pts = np.linspace(x_1.min(), x_1.max(), 30)
+	y_pts = np.linspace(x_2.min(), x_2.max(), 30)
+	x_pairs, y_pairs = np.meshgrid(x_pts,y_pts)
+
+	# Get values for all ordered pairs in set using model
+
+	z = 1 / (1 + np.e ** (model.coef_[0] + model.coef_[1] * x_pairs + model.coef_[2] * y_pairs))
+
+	# Graph
+
+	fig = plt.figure(figsize = (100,100))
+	ax = plt.axes(projection='3d')
+	ax.plot_surface(x_pairs,y_pairs,z, rstride=1, cstride=1, color='tab:cyan', alpha=0.4, antialiased=False)
+	ax.scatter(x_1,x_2,t, c = 'tab:olive')
+	ax.set_ylabel('mass')
+	ax.set_title('pima', fontsize=20)
+	plt.xlabel('\n\n\nglucose', fontsize=18)
+	plt.ylabel('\n\n\nmass', fontsize=16)
+	plt.savefig('figs/multivariate_logit.png')
 	plt.show()
 	plt.close()
 
@@ -729,5 +754,5 @@ if __name__ == '__main__':
 	#ridge_driver()
 	#lasso_driver()
 	#logit_driver()
-    probit_driver()
+	probit_driver()
 
