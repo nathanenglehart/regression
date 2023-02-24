@@ -62,9 +62,10 @@ class probit_regression():
 		return self
 
 	def Phi(self, z):
+		
 		""" Cumulative distribution function for the standard normal distribution. """
+		
 		return norm.cdf(-z) 
-
 
 	def predict_proba(self, X):
 
@@ -90,3 +91,10 @@ class probit_regression():
 		"""
 
 		return self.predict_proba(X).round()
+
+	def log_likelihood(self,X,t,theta):
+		
+		""" Compute log likelihood given inputs. """
+
+		y_star = np.dot(X,theta)
+		return np.sum(-np.log(1+np.exp(y_star))) + np.sum(t * y_star) 
