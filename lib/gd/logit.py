@@ -91,3 +91,10 @@ class logit_regression():
 		"""
 
 		return self.predict_proba(X).round()
+
+	def log_likelihood(self,X,t,theta):
+		
+		""" Compute log likelihood given inputs. """
+
+		y_star = np.dot(X,theta)
+		return np.sum(-np.log(1+np.exp(y_star))) + np.sum(t * y_star) 

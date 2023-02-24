@@ -19,6 +19,7 @@ plt.style.use('seaborn-poster')
 
 verbose = True
 
+
 def compute_classification_error_rate(t,t_hat):
 
 	""" Computes error rate for classification methods such as logistic regression.
@@ -179,11 +180,15 @@ def logit_driver():
 	
 	model = logit_regression()
 	model = logit_regression().fit(X,t)
+	coef = model.coef_
 
 	t_probs = model.predict_proba(X)
 
 	if(verbose):
 		print('prob preds:',t_probs)
+		print('McFadden R-Squared:',mcfadden_r_squared(model.coef_, X, t, model))
+		print('Efron R-Squared:',efron_r_squared(t,t_probs))
+		print('log likelihood',model.log_likelihood(X,t,coef))
 
 	plt.scatter(x_1,t, color='tab:olive')
 	plt.plot(x_1,t_probs, color='tab:cyan')
@@ -205,6 +210,7 @@ def logit_driver():
 
 	model = logit_regression()
 	model = logit_regression().fit(X,t)
+	coef = model.coef_
 
 	t_probs = model.predict_proba(X)
 
@@ -212,6 +218,7 @@ def logit_driver():
 		print('prob preds',t_probs)
 		print('McFadden R-Squared:',mcfadden_r_squared(model.coef_, X, t, model))
 		print('Efron R-Squared:',efron_r_squared(t,t_probs))
+		print('log likelihood',model.log_likelihood(X,t,coef))
 
 	plt.scatter(x_1, t, facecolors='none', edgecolor='tab:olive')
 	x_1, t_probs = zip(*sorted(zip(x_1,t_probs))) # plot points in order
@@ -220,30 +227,6 @@ def logit_driver():
 	plt.ylabel('diabetes')
 	plt.savefig('figs/simple_logit.png')
 	plt.show()
-	plt.close()
-
-	# POLYNOMIAL LOGIT REGRESSION
-	
-	t = np.array(data['diabetes']) 
-	x_1 = preprocessing.scale(np.array(data['glucose'], dtype=np.float128))
-	
-	X = np.array([np.ones(len(t)), x_1, np.square(x_1)]).T
-
-	model = logit_regression()
-	model = logit_regression().fit(X,t)
-
-	t_probs = model.predict_proba(X)
-
-	if(verbose):
-		print('prob preds',t_probs)
-
-	plt.scatter(x_1,t, color='tab:olive')
-	x_1, t_probs = zip(*sorted(zip(x_1,t_probs))) # plot points in order
-	plt.plot(x_1,t_probs, color='tab:cyan')
-	plt.xlabel('glucose')
-	plt.ylabel('diabetes')
-	plt.savefig('figs/polynomial_logit.png')
-	#plt.show()
 	plt.close()
 
 	# MULTIVARIATE LOGIT REGRESSION
@@ -256,6 +239,7 @@ def logit_driver():
 
 	model = logit_regression()
 	model = logit_regression().fit(X,t)
+	coef = model.coef_
 
 	t_probs = model.predict_proba(X)
 
@@ -263,6 +247,7 @@ def logit_driver():
 		print('prob preds',t_probs)
 		print('McFadden R-Squared:',mcfadden_r_squared(model.coef_, X, t, model))
 		print('Efron R-Squared:',efron_r_squared(t,t_probs))
+		print('log likelihood',model.log_likelihood(X,t,coef))
 
 	x_pts = np.linspace(x_1.min(), x_1.max(), 30)
 	y_pts = np.linspace(x_2.min(), x_2.max(), 30)
@@ -416,6 +401,7 @@ def probit_driver():
 
 	model = probit_regression()
 	model = probit_regression().fit(X,t)
+	coef = model.coef_
 
 	t_probs = model.predict_proba(X)
 
@@ -423,6 +409,7 @@ def probit_driver():
 		print('prob preds',t_probs)
 		print('McFadden R-Squared:',mcfadden_r_squared(model.coef_, X, t, model))
 		print('Efron R-Squared:',efron_r_squared(t,t_probs))
+		print('log likelihood',model.log_likelihood(X,t,coef))
 
 	x_pts = np.linspace(x_1.min(), x_1.max(), 30)
 	y_pts = np.linspace(x_2.min(), x_2.max(), 30)
@@ -753,6 +740,7 @@ if __name__ == '__main__':
 	#ols_driver()
 	#ridge_driver()
 	#lasso_driver()
-	#logit_driver()
-	probit_driver()
+	logit_driver()
+	#probit_driver()
+
 
