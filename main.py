@@ -121,22 +121,6 @@ def mcfadden_r_squared(theta, X, t, model):
 
 	return 1 - (L_ul / L_0)
 
-"""
-def mcfadden_adjusted_rsquare(theta, X, t):
-
-	
-
-	score = np.dot(X, theta).reshape(1, X.shape[0])
-	full_log_likelihood = np.sum(-np.log(1 + np.exp(score))) + np.sum(t * score)
-
-	z = np.array([w if i == 0 else 0.0 for i, w in enumerate(theta.reshape(1, X.shape[1])[0])]).reshape(X.shape[1], 1)
-	score = np.dot(X, z).reshape(1, X.shape[0])
-	null_log_likelihood = np.sum(-np.log(1 + np.exp(score))) + np.sum(t * score)
-
-	k = float(X.shape[1])
-	return 1.0 - ((full_log_likelihood- k) / null_log_likelihood)
-"""
-
 def lasso_driver():
 	
 	# DRIVER FOR LASSO REGRESSION EXAMPLE
@@ -255,7 +239,7 @@ def logit_driver():
 
 	# Get values for all ordered pairs in set using model
 
-	z = 1 / (1 + np.e ** (model.coef_[0] + model.coef_[1] * x_pairs + model.coef_[2] * y_pairs))
+	z = 1 / (-(1 + np.e ** (model.coef_[0] + model.coef_[1] * x_pairs + model.coef_[2] * y_pairs)))
 
 	# Graph
 
@@ -387,7 +371,7 @@ def probit_driver():
 	plt.plot(x_1,t_probs, color='tab:cyan')
 	plt.xlabel('glucose')
 	plt.ylabel('diabetes')
-	plt.savefig('figs/simple_logit.png')
+	plt.savefig('figs/simple_probit.png')
 	plt.show()
 	plt.close()
 
@@ -417,7 +401,7 @@ def probit_driver():
 
 	# Get values for all ordered pairs in set using model
 
-	z = 1 / (1 + np.e ** (model.coef_[0] + model.coef_[1] * x_pairs + model.coef_[2] * y_pairs))
+	z = 1 - model.Phi(model.coef_[0] + model.coef_[1] * x_pairs + model.coef_[2] * y_pairs) #z = 1 / (1 + np.e ** (-(model.coef_[0] + model.coef_[1] * x_pairs + model.coef_[2] * y_pairs)))
 
 	# Graph
 
@@ -429,11 +413,99 @@ def probit_driver():
 	ax.set_title('pima', fontsize=20)
 	plt.xlabel('\n\n\nglucose', fontsize=18)
 	plt.ylabel('\n\n\nmass', fontsize=16)
-	plt.savefig('figs/multivariate_logit.png')
+	plt.savefig('figs/multivariate_probit.png')
 	plt.show()
 	plt.close()
 
+	data = pd.read_csv('data/catanstats.csv')
 
+	# CATAN EXAMPLE PROBIT REGRESSION 
+
+	# Create bernoulli rv which is 1 when a player won and is 0 when a player lost
+
+	# https://www.kaggle.com/datasets/lumins/settlers-of-catan-games
+	# gameNum,player,points,me,2,3,4,5,6,7,8,9,10,11,12,settlement1,,,,,,settlement2,,,,,,production,tradeGain,robberCardsGain,totalGain,tradeLoss,robberCardsLoss,tribute,totalLoss,totalAvailable
+
+	# production - total cards gained from settlements and cities during game
+	# tradeGain - total cards gained from peer AND bank trades during game
+	# robberCardsGain - total cards gained from stealing with the robber, plus cards gained with non-knight development cards. A road building card is +4 resources.
+	# totalGain - sum of previous 3 columns.
+	# tradeLoss - total cards lost from peer AND bank trades during game
+	# robberCardsLoss - total cards lost from robbers, knights, and other players' monopoly cards
+	# tribute - total cards lost when player had to discard on a 7 roll (separate from previous column.)
+	# totalLoss - sum of previous 3 columns.
+	# totalAvailable - totalGain minus totalLoss.
+
+	data['won'] = 0
+	for i in range(len(data)):
+		if(data.loc[i, 'points'] >= 10):
+			data.loc[i,'won'] = 1
+	print(data['won'])
+
+	t = np.array(data['won']) 
+	x_1 = preprocessing.scale(np.array(data['totalAvailable'], dtype=np.float128)) # , dtype=np.float128 to prevent overflow
+	
+	X = np.array([np.ones(len(t)), x_1]).T
+
+	model = probit_regression()
+	model = probit_regression().fit(X,t)
+	coef = model.coef_
+
+	t_probs = model.predict_proba(X)
+
+	if(verbose):
+		print('prob preds',t_probs)
+		print('McFadden R-Squared:',mcfadden_r_squared(coef, X, t, probit_regression()))
+		print('Efron R-Squared:',efron_r_squared(t,t_probs))
+		print('log likelihood',model.log_likelihood(X,t,coef))
+
+	plt.scatter(x_1, t, facecolors='none', edgecolor='tab:olive')
+	x_1, t_probs = zip(*sorted(zip(x_1,t_probs))) # plot points in order
+	plt.plot(x_1,t_probs, color='tab:cyan')
+	plt.xlabel('totalAvailable')
+	plt.ylabel('won')
+	plt.savefig('figs/catan_probit.png')
+	plt.show()
+	plt.close()
+
+	x_1 = preprocessing.scale(np.array(data['totalLoss'], dtype=np.float128))
+	x_2 = preprocessing.scale(np.array(data['totalGain'], dtype=np.float128))
+	
+	X = np.array([np.ones(len(t)), x_1, x_2]).T
+
+	model = probit_regression()
+	model = probit_regression().fit(X,t)
+	coef = model.coef_
+
+	t_probs = model.predict_proba(X)
+
+	if(verbose):
+		print('prob preds',t_probs)
+		print('McFadden R-Squared:',mcfadden_r_squared(model.coef_, X, t, model))
+		print('Efron R-Squared:',efron_r_squared(t,t_probs))
+		print('log likelihood',model.log_likelihood(X,t,coef))
+
+	x_pts = np.linspace(x_1.min(), x_1.max(), 30)
+	y_pts = np.linspace(x_2.min(), x_2.max(), 30)
+	x_pairs, y_pairs = np.meshgrid(x_pts,y_pts)
+
+	# Get values for all ordered pairs in set using model
+
+	z = 1 - model.Phi(model.coef_[0] + model.coef_[1] * x_pairs + model.coef_[2] * y_pairs) #z = 1 / (1 + np.e ** (-(model.coef_[0] + model.coef_[1] * x_pairs + model.coef_[2] * y_pairs)))
+
+	# Graph
+
+	fig = plt.figure(figsize = (100,100))
+	ax = plt.axes(projection='3d')
+	ax.plot_surface(x_pairs,y_pairs,z, rstride=1, cstride=1, color='tab:cyan', alpha=0.4, antialiased=False)
+	ax.scatter(x_1,x_2,t, c = 'tab:olive')
+	ax.set_ylabel('won')
+	ax.set_title('catan', fontsize=20)
+	plt.xlabel('\n\n\ntotal_gain', fontsize=18)
+	plt.ylabel('\n\n\ntotal_loss', fontsize=16)
+	plt.savefig('figs/catan_probit_multi.png')
+	plt.show()
+	plt.close()
 
 def ols_driver():
 
@@ -740,7 +812,6 @@ if __name__ == '__main__':
 	#ols_driver()
 	#ridge_driver()
 	#lasso_driver()
-	logit_driver()
-	#probit_driver()
-
+	#logit_driver()
+	probit_driver()
 
