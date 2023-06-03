@@ -507,6 +507,7 @@ def probit_driver():
 	plt.show()
 	plt.close()
 
+"""
 def ols_driver():
 
 	# DRIVER FOR VARIOUS OLS REGRESSION EXAMPLES
@@ -646,6 +647,7 @@ def ols_driver():
 	if(verbose):
 		print('R-Squared:',r_squared(t,t_hat))
 		print('Adjusted R-Squared:',adj_r_squared(t,t_hat,X.shape[1]-1))
+"""
 
 def ridge_driver():
 
@@ -807,11 +809,47 @@ def train_test_split(data, train_filename, test_filename):
 	train.to_csv(r'./data/' + train_filename, index=False)
 	test.to_csv(r'./data/' + test_filename, index=False)
 
+def ols_simulation():
+
+	x1 = np.random.normal(size=1000, loc=1, scale=2)
+	 
+	theta0 = 1
+	theta1 = 2
+	 
+	epsilon = np.random.normal(size=1000, loc=0, scale=1) # must be standard normal
+	 
+	t = theta0 + theta1 * x1 + epsilon
+	 
+	data = pd.DataFrame({'t': t, 'x1': x1})
+	print(data)
+
+	# SIMPLE OLS REGRESSION
+	
+	t = np.array(data['t'])
+	x1 = np.array(data['x1'])
+
+	X = np.array([np.ones(len(t)), x1]).T
+
+	model = ols_regression()
+	model = ols_regression().fit(X,t)
+
+	t_hat = model.predict(X)
+	
+	plt.scatter(np.array(data['x1']), np.array(data['t']), color='g')
+	plt.plot(np.array(data['x1']), t_hat, color='k')
+	plt.xlabel('x1')
+	plt.ylabel('t')
+	#plt.savefig('figs/simple_ols.png')
+	plt.show()
+
+
+
 if __name__ == '__main__':
 	
 	#ols_driver()
 	#ridge_driver()
 	#lasso_driver()
 	#logit_driver()
-	probit_driver()
+	#probit_driver()
+	simulation()
 
